@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FreeSteamGames_TelegramBot", "FreeSteamGames_TelegramBot\FreeSteamGames_TelegramBot.csproj", "{82B8C4E7-C176-4635-80D3-78EFCCE3BD36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamDB_Crawler", "SteamDB_Crawler\SteamDB_Crawler.csproj", "{87DC0602-3F21-47E8-9E14-494EDA5787E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataManager", "DataManager\DataManager.csproj", "{C7A4C5AF-58DF-4408-B4E3-7EF7B5AADA85}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{82B8C4E7-C176-4635-80D3-78EFCCE3BD36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82B8C4E7-C176-4635-80D3-78EFCCE3BD36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82B8C4E7-C176-4635-80D3-78EFCCE3BD36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82B8C4E7-C176-4635-80D3-78EFCCE3BD36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87DC0602-3F21-47E8-9E14-494EDA5787E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87DC0602-3F21-47E8-9E14-494EDA5787E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87DC0602-3F21-47E8-9E14-494EDA5787E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87DC0602-3F21-47E8-9E14-494EDA5787E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7A4C5AF-58DF-4408-B4E3-7EF7B5AADA85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7A4C5AF-58DF-4408-B4E3-7EF7B5AADA85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7A4C5AF-58DF-4408-B4E3-7EF7B5AADA85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7A4C5AF-58DF-4408-B4E3-7EF7B5AADA85}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7FBE1F35-3D0A-4822-B686-E4EB490BC892}
+	EndGlobalSection
+EndGlobal
