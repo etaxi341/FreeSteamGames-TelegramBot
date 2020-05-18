@@ -48,31 +48,40 @@ namespace FreeSteamGames_TelegramBot
             DatabaseContext db = new DatabaseContext();
             Subscribers[] subs = db.subscribers.Where(s => s.wantsDlcInfo || s.wantsGameInfo).ToArray();
 
-            foreach(Subscribers sub in subs)
+            foreach (Subscribers sub in subs)
             {
-                SendFreeGameMessage(sub);
+                Thread messageThread = new Thread(() => SendFreeGameMessage(sub));
+                messageThread.Start();
+
+                Thread.Sleep(10);
             }
         }
 
         static void SendFreeGameMessage(Subscribers sub)
         {
-            foreach (var game in games)
+            try
             {
-                if ((sub.wantsDlcInfo && game.isDLC) || (sub.wantsGameInfo && !game.isDLC))
+                foreach (var game in games)
                 {
-                    DatabaseContext db = new DatabaseContext();
-                    if (db.notifications.Any(n => n.steamLink == game.steamLink && n.chatID == sub.chatID))
-                        continue;
+                    if ((sub.wantsDlcInfo && game.isDLC) || (sub.wantsGameInfo && !game.isDLC))
+                    {
+                        DatabaseContext db = new DatabaseContext();
+                        if (db.notifications.Any(n => n.steamLink == game.steamLink && n.chatID == sub.chatID))
+                            continue;
 
-                    bot.SendTextMessageAsync(sub.chatID, game.name + " just went free! " + game.steamLink);
+                        bot.SendTextMessageAsync(sub.chatID, game.name + " just went free! " + game.steamLink);
 
-                    Notifications notification = new Notifications();
-                    notification.chatID = sub.chatID;
-                    notification.steamLink = game.steamLink;
-                    db.notifications.Add(notification);
-                    db.SaveChanges();
+                        Notifications notification = new Notifications();
+                        notification.chatID = sub.chatID;
+                        notification.steamLink = game.steamLink;
+                        db.notifications.Add(notification);
+                        db.SaveChanges();
+
+                        Thread.Sleep(1000); //Sleep 1 second between every message so I don't hit any limits
+                    }
                 }
             }
+            catch { }
         }
 
         private static void Bot_OnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
@@ -115,8 +124,6 @@ namespace FreeSteamGames_TelegramBot
                     sub.wantsDlcInfo = false;
                     sub.wantsGameInfo = true;
 
-                    Console.WriteLine("User " + e.Message.Chat.FirstName + " set to " + e.Message.Text);
-
                     bot.SendTextMessageAsync(
                         chatId: chatID,
                         text: "Thank you, I will let you know when I find some free games!",
@@ -129,8 +136,6 @@ namespace FreeSteamGames_TelegramBot
                     sub.wantsDlcInfo = true;
                     sub.wantsGameInfo = true;
 
-                    Console.WriteLine("User " + e.Message.Chat.FirstName + " set to " + e.Message.Text);
-
                     bot.SendTextMessageAsync(
                         chatId: chatID,
                         text: "Thank you, I will let you know when I find some free games and dlcs!",
@@ -142,8 +147,6 @@ namespace FreeSteamGames_TelegramBot
                 case dlcsOnly:
                     sub.wantsDlcInfo = true;
                     sub.wantsGameInfo = false;
-
-                    Console.WriteLine("User " + e.Message.Chat.FirstName + " set to " + e.Message.Text);
 
                     bot.SendTextMessageAsync(
                         chatId: chatID,
