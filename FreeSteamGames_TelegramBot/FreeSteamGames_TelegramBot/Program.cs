@@ -29,7 +29,7 @@ namespace FreeSteamGames_TelegramBot
             {
                 botToken = args[0];
             }
-            
+
             bot = new TelegramBotClient(botToken);
             bot.OnMessage += Bot_OnMessage;
             bot.StartReceiving();

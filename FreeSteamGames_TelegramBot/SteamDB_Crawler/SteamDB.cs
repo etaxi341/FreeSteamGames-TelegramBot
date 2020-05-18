@@ -1,4 +1,5 @@
-﻿using SteamDB_Crawler.Models;
+﻿using Newtonsoft.Json.Linq;
+using SteamDB_Crawler.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,12 +26,21 @@ namespace SteamDB_Crawler
 
                 foreach (string freesplit in freesplits)
                 {
+                    var regAPPID = new Regex("data-appid=\"(.*?)\"");
                     var regURL = new Regex("href=\"https:\\/\\/store\\.steampowered\\.com\\/app(.*?)\"");
                     var regIMG = new Regex("src=\"https:\\/\\/steamcdn-a\\.akamaihd\\.net\\/steam\\/apps(.*?)\"");
                     var regNAME = new Regex("<b>(.*?)<\\/b>");
+                    var matchesAPPID = regAPPID.Matches(freesplit);
                     var matchesURL = regURL.Matches(freesplit);
                     var matchesIMG = regIMG.Matches(freesplit);
                     var matchesNAME = regNAME.Matches(freesplit);
+
+                    client.Headers["User-Agent"] = @"Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 81.0.4044.138 Safari / 537.36";
+                    string steamApiJSONString = client.DownloadString("https://store.steampowered.com/api/appdetails/?appids=" + matchesAPPID[0].Groups[1].Value + "&cc=EE&l=english&v=1");
+
+                    var steamApiJSON = JObject.Parse(steamApiJSONString);
+
+                    string steamItemType = steamApiJSON[matchesAPPID[0].Groups[1].Value]["data"]["type"].ToString();
 
                     if (matchesURL.Count == 0 || matchesIMG.Count == 0)
                         continue;
@@ -39,7 +49,7 @@ namespace SteamDB_Crawler
                     string img = "https://steamcdn-a.akamaihd.net/steam/apps" + matchesIMG[0].Groups[1].Value;
                     string name = matchesNAME[0].Groups[1].Value;
 
-                    bool isDLC = name.Contains("<i class=\"muted\">");
+                    bool isDLC = name.Contains("<i class=\"muted\">") || steamItemType.ToLower() == "dlc";
                     name = name.Split("<i class=\"muted\">")[0];
 
                     GameModel model = new GameModel();
@@ -49,7 +59,7 @@ namespace SteamDB_Crawler
                     model.isDLC = isDLC;
 
                     gameModels.Add(model);
-                }              
+                }
             }
 
             return gameModels;
