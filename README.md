@@ -1,3 +1,5 @@
+[![Patreon](https://img.shields.io/badge/Patreon-donate-green)](https://www.patreon.com/etaxi341)
+
 # FreeSteamGames TelegramBot
 ## What is this?
 
