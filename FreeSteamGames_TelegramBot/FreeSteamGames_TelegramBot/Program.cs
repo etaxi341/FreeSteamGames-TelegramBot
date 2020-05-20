@@ -103,6 +103,7 @@ namespace FreeSteamGames_TelegramBot
             const string gameOnly = "Games Only";
             const string gameanddlc = "Games and DLCs";
             const string dlcsOnly = "DLCs Only";
+            const string unsubscribe = "/unsubscribe";
 
 
             switch (e.Message.Text)
@@ -119,6 +120,18 @@ namespace FreeSteamGames_TelegramBot
                         text: "What messages do you want to receive?",
                         replyMarkup: replyMarkup
                     );
+                    break;
+                case unsubscribe:
+                    sub.wantsDlcInfo = false;
+                    sub.wantsGameInfo = false;
+
+                    bot.SendTextMessageAsync(
+                        chatId: chatID,
+                        text: "You have unsubscribed, you will be missed",
+                        replyMarkup: new ReplyKeyboardRemove()
+                    );
+
+                    SendFreeGameMessage(sub);
                     break;
                 case gameOnly:
                     sub.wantsDlcInfo = false;
