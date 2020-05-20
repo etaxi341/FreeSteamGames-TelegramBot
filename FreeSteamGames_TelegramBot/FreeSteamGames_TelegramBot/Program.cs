@@ -130,8 +130,6 @@ namespace FreeSteamGames_TelegramBot
                         text: "You have unsubscribed, you will be missed",
                         replyMarkup: new ReplyKeyboardRemove()
                     );
-
-                    SendFreeGameMessage(sub);
                     break;
                 case gameOnly:
                     sub.wantsDlcInfo = false;
