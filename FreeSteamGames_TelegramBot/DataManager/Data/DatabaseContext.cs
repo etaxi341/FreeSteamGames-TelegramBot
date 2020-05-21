@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using DataManager.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,12 +10,19 @@ namespace DataManager.Data
     public class DatabaseContext : DbContext
     {
         static bool wasMigrated = false;
+        static bool isMigrating = false;
         public DatabaseContext()
         {
+            while(isMigrating)
+            {
+                Thread.Sleep(1000);
+            }
             if (!wasMigrated)
             {
-                wasMigrated = true;
+                isMigrating = true;
                 Database.Migrate();
+                wasMigrated = true;
+                isMigrating = false;
             }
         }
 

@@ -120,7 +120,7 @@ namespace FreeSteamGames_TelegramBot
                 Thread messageThread = new Thread(() => SendFreeGameMessage(sub));
                 messageThread.Start();
 
-                Thread.Sleep(10);
+                Thread.Sleep(30);
             }
         }
 
@@ -133,7 +133,7 @@ namespace FreeSteamGames_TelegramBot
                     if ((sub.wantsDlcInfo && game.isDLC) || (sub.wantsGameInfo && !game.isDLC))
                     {
                         DatabaseContext db = new DatabaseContext();
-                        if (db.notifications.Any(n => n.steamLink == game.steamLink && n.chatID == sub.chatID))
+                        if (db.notifications.Any(n => n.steamLink.ToLower().StartsWith(game.steamLink.ToLower()) && n.chatID == sub.chatID))
                             continue;
 
                         bot.SendTextMessageAsync(sub.chatID, game.name + " just went free! " + game.steamLink);

@@ -21,38 +21,31 @@ namespace SteamDB_Crawler
                     client.Headers["User-Agent"] = @"Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 81.0.4044.138 Safari / 537.36";
                     string htmlCode = client.DownloadString("https://steamdb.info/upcoming/free/");
 
-                    htmlCode = htmlCode.Split("upcoming-promotions")[0];
+                    Regex regAPPID = new Regex("data-appid=\"(.*?)\"");
+                    MatchCollection matchesAPPID = regAPPID.Matches(htmlCode);
 
-                    string[] splits = htmlCode.Split("app sub");
-                    string[] freesplits = splits.Where(s => s.Contains("octicon-infinity")).ToArray();
-
-                    foreach (string freesplit in freesplits)
+                    foreach (Match match in matchesAPPID)
                     {
-                        var regAPPID = new Regex("data-appid=\"(.*?)\"");
-                        var regURL = new Regex("href=\"https:\\/\\/store\\.steampowered\\.com\\/app(.*?)\"");
-                        var regIMG = new Regex("src=\"https:\\/\\/steamcdn-a\\.akamaihd\\.net\\/steam\\/apps(.*?)\"");
-                        var regNAME = new Regex("<b>(.*?)<\\/b>");
-                        var matchesAPPID = regAPPID.Matches(freesplit);
-                        var matchesURL = regURL.Matches(freesplit);
-                        var matchesIMG = regIMG.Matches(freesplit);
-                        var matchesNAME = regNAME.Matches(freesplit);
+                        string appID = match.Groups[1].Value;
 
+                        string steamApiJSONString = client.DownloadString("https://store.steampowered.com/api/appdetails/?appids=" + appID + "&cc=EE&l=english&v=1");
+                        var steamApiJSON = JObject.Parse(steamApiJSONString);
 
-                        if (matchesURL.Count == 0 || matchesIMG.Count == 0 || matchesNAME.Count == 0 || matchesAPPID.Count == 0)
+                        bool success = steamApiJSON[appID]["success"].ToObject<bool>();
+                        if (!success)
                             continue;
 
-                        client.Headers["User-Agent"] = @"Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 81.0.4044.138 Safari / 537.36";
-                        string steamApiJSONString = client.DownloadString("https://store.steampowered.com/api/appdetails/?appids=" + matchesAPPID[0].Groups[1].Value + "&cc=EE&l=english&v=1");
+                        bool isFree = steamApiJSON[appID]["data"]["is_free"].ToObject<bool>();
 
-                        var steamApiJSON = JObject.Parse(steamApiJSONString);
-                        string steamItemType = steamApiJSON[matchesAPPID[0].Groups[1].Value]["data"]["type"].ToString();
+                        if (!isFree)
+                            continue;
 
-                        string url = "https://store.steampowered.com/app" + matchesURL[0].Groups[1].Value;
-                        string img = "https://steamcdn-a.akamaihd.net/steam/apps" + matchesIMG[0].Groups[1].Value;
-                        string name = matchesNAME[0].Groups[1].Value;
+                        string url = "https://store.steampowered.com/app/" + appID;
+                        string img = steamApiJSON[appID]["data"]["header_image"].ToString();
+                        string name = steamApiJSON[appID]["data"]["name"].ToString();
+                        string steamItemType = steamApiJSON[appID]["data"]["type"].ToString();
 
-                        bool isDLC = name.Contains("<i class=\"muted\">") || steamItemType.ToLower() == "dlc";
-                        name = name.Split("<i class=\"muted\">")[0];
+                        bool isDLC = steamItemType.ToLower() == "dlc";
 
                         GameModel model = new GameModel();
                         model.steamLink = url;
