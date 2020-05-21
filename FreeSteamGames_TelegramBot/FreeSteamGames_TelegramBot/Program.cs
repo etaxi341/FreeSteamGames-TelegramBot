@@ -46,7 +46,12 @@ namespace FreeSteamGames_TelegramBot
             while (true)
             {
                 SendFreeGameMessages();
-                Thread.Sleep(3600000); //Check every hour
+
+                var timeOfDay = DateTime.Now.TimeOfDay;
+                var nextFullHour = TimeSpan.FromHours(Math.Ceiling(timeOfDay.Add(TimeSpan.FromMinutes(-1)).TotalHours)).Add(TimeSpan.FromMinutes(1)); //One Minute after next full hour
+                int delta = (int)((nextFullHour - timeOfDay).TotalMilliseconds);
+
+                Thread.Sleep(delta); //Sleep until next hour + 1 minute (High chance to catch new sales early)
             }
         }
 
