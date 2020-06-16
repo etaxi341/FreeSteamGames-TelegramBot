@@ -37,7 +37,9 @@ namespace SteamDB_Crawler
 
                         bool isFree = steamApiJSON[appID]["data"]["is_free"].ToObject<bool>();
 
-                        if (!isFree)
+                        bool isReleased = !steamApiJSON[appID]["data"]["release_date"]["coming_soon"].ToObject<bool>();
+
+                        if (!isFree || !isReleased)
                             continue;
 
                         string url = "https://store.steampowered.com/app/" + appID;
