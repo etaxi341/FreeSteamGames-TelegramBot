@@ -9,6 +9,6 @@ namespace SteamDB_Crawler.Models
         public string steamLink { get; set; }
         public string gameBanner { get; set; }
         public string name { get; set; }
-        public bool isDLC { get; set; }
+        public string gameType { get; set; }
     }
 }

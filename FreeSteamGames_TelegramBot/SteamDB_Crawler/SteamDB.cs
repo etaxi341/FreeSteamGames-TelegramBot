@@ -47,13 +47,13 @@ namespace SteamDB_Crawler
                         string name = steamApiJSON[appID]["data"]["name"].ToString();
                         string steamItemType = steamApiJSON[appID]["data"]["type"].ToString();
 
-                        bool isDLC = steamItemType.ToLower() == "dlc";
+                        string gameType = steamItemType.ToLower();
 
                         GameModel model = new GameModel();
                         model.steamLink = url;
                         model.gameBanner = img;
                         model.name = name;
-                        model.isDLC = isDLC;
+                        model.gameType = gameType;
 
                         gameModels.Add(model);
                     }

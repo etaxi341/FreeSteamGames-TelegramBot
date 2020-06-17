@@ -136,7 +136,7 @@ namespace FreeSteamGames_TelegramBot
                 DatabaseContext db = new DatabaseContext();
                 foreach (var game in games)
                 {
-                    if ((sub.wantsDlcInfo && game.isDLC) || (sub.wantsGameInfo && !game.isDLC))
+                    if ((sub.wantsDlcInfo && game.gameType == "dlc") || (sub.wantsGameInfo && game.gameType == "game"))
                     {
                         
                         if (db.notifications.Any(n => n.steamLink.StartsWith(game.steamLink) && n.chatID == sub.chatID))
