@@ -1,6 +1,7 @@
-﻿using DataManager.Data;
+using DataManager.Data;
 using DataManager.Models;
 using SteamDB_Crawler;
+using SteamDB_Crawler.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -43,9 +44,11 @@ namespace FreeSteamGames_TelegramBot
             bot.OnCallbackQuery += Bot_OnCallbackQuery;
             bot.StartReceiving();
 
+            SteamDB.OnFreeGameReturnedEvent += OnFreeGameReturnedEvent;
+
             while (true)
             {
-                SendFreeGameMessages();
+                SteamDB.Crawl();
 
                 var timeOfDay = DateTime.Now.TimeOfDay;
                 var nextFullHour = TimeSpan.FromHours(Math.Ceiling(timeOfDay.Add(TimeSpan.FromMinutes(-1)).TotalHours)).Add(TimeSpan.FromMinutes(1)); //One Minute after next full hour
@@ -113,9 +116,9 @@ namespace FreeSteamGames_TelegramBot
             db.SaveChanges();
         }
 
-        static void SendFreeGameMessages()
+        private static void OnFreeGameReturnedEvent(List<GameModel> gameModels)
         {
-            games = SteamDB.GetFreeGames();
+            games = gameModels;
 
             DatabaseContext db = new DatabaseContext();
             Subscribers[] subs = db.subscribers.Where(s => s.wantsDlcInfo || s.wantsGameInfo).ToArray();
