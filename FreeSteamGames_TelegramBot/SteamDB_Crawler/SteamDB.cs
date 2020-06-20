@@ -44,7 +44,10 @@ namespace SteamDB_Crawler
                 {
                     DateTime minutesAgo5 = DateTime.Now.AddMinutes(-5);
                     while (previousCalls.Where(e => e > minutesAgo5).Count() >= 190)
+                    {
                         Thread.Sleep(1000);
+                        minutesAgo5 = DateTime.Now.AddMinutes(-5);
+                    }
 
                     previousCalls.Add(DateTime.Now);
                     string appID = match.Groups[1].Value;
@@ -79,7 +82,8 @@ namespace SteamDB_Crawler
                         model.name = name;
                         model.gameType = gameType;
 
-                        gameModels.Add(model);
+                        if (!gameModels.Any(m => m.steamLink == model.steamLink))
+                            gameModels.Add(model);
                     }
                 }
 

@@ -13,6 +13,8 @@ namespace SteamDB_Crawler
         public delegate void OnSourceCodeLoaded(string src);
         public static OnSourceCodeLoaded OnSourceCodeLoadedEvent;
 
+        static bool isInited = false;
+
         public static void OpenUrl(string url)
         {
             CefSharpSettings.SubprocessExitIfParentProcessClosed = true;
@@ -22,7 +24,9 @@ namespace SteamDB_Crawler
                 CachePath = Path.Combine(Environment.GetFolderPath(
                                          Environment.SpecialFolder.LocalApplicationData), "CefSharp\\Cache")
             };
-            Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
+            if (!isInited)
+                Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
+            isInited = true;
 
             if (browser != null)
                 browser.Load(url);
