@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace FreeSteamGames_TelegramBot
@@ -15,6 +17,7 @@ namespace FreeSteamGames_TelegramBot
     class Program
     {
         static TelegramBotClient bot;
+        static User botUser;
         static List<SteamDB_Crawler.Models.GameModel> games = new List<SteamDB_Crawler.Models.GameModel>();
 
         #region COMMANDS
@@ -25,7 +28,7 @@ namespace FreeSteamGames_TelegramBot
         const string unsubscribe = "/unsubscribe";
         #endregion
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             string botToken;
 
@@ -43,6 +46,8 @@ namespace FreeSteamGames_TelegramBot
             bot.OnMessage += Bot_OnMessage;
             bot.OnCallbackQuery += Bot_OnCallbackQuery;
             bot.StartReceiving();
+
+            botUser = await bot.GetMeAsync();
 
             SteamDB.OnFreeGameReturnedEvent += OnFreeGameReturnedEvent;
 
@@ -175,7 +180,12 @@ namespace FreeSteamGames_TelegramBot
                 db.subscribers.Add(sub);
             }
 
-            switch (e.Message.Text)
+            string command = e.Message.Text;
+
+            if (!string.IsNullOrEmpty(command))
+                command = command.ToLower().Replace("@" + botUser.Username.ToLower(), "");
+
+            switch (command)
             {
                 case start:
                     InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup(
