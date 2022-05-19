@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace DataManager.Models
+namespace DataManager.Models;
+
+public class Subscribers
 {
-    public class Subscribers
-    {
-        [Key]
-        public long chatID { get; set; }
-        public bool wantsDlcInfo { get; set; }
-        public bool wantsGameInfo { get; set; }
-    }
+    [Key]
+    public long chatID { get; set; }
+    public bool wantsDlcInfo { get; set; }
+    public bool wantsGameInfo { get; set; }
 }

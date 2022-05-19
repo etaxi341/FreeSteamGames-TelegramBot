@@ -4,50 +4,48 @@ using System.Threading;
 using CefSharp;
 using CefSharp.OffScreen;
 
-namespace SteamDB_Crawler
+namespace SteamDB_Crawler;
+class Browser
 {
-    class Browser
+    private static ChromiumWebBrowser browser;
+
+    public delegate void OnSourceCodeLoaded(string src);
+    public static OnSourceCodeLoaded OnSourceCodeLoadedEvent;
+
+    static bool isInited = false;
+
+    public static void OpenUrl(string url)
     {
-        private static ChromiumWebBrowser browser;
+        CefSharpSettings.SubprocessExitIfParentProcessClosed = true;
 
-        public delegate void OnSourceCodeLoaded(string src);
-        public static OnSourceCodeLoaded OnSourceCodeLoadedEvent;
-
-        static bool isInited = false;
-
-        public static void OpenUrl(string url)
+        var settings = new CefSettings()
         {
-            CefSharpSettings.SubprocessExitIfParentProcessClosed = true;
+            CachePath = Path.Combine(Environment.GetFolderPath(
+                                     Environment.SpecialFolder.LocalApplicationData), "CefSharp\\Cache")
+        };
+        if (!isInited)
+            Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
+        isInited = true;
 
-            var settings = new CefSettings()
-            {
-                CachePath = Path.Combine(Environment.GetFolderPath(
-                                         Environment.SpecialFolder.LocalApplicationData), "CefSharp\\Cache")
-            };
-            if (!isInited)
-                Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
-            isInited = true;
-
-            if (browser != null)
-                browser.Load(url);
-            else
-            {
-                browser = new ChromiumWebBrowser(url);
-                browser.LoadingStateChanged += BrowserLoadingStateChanged;
-            }
-        }
-
-        private static void BrowserLoadingStateChanged(object sender, LoadingStateChangedEventArgs e)
+        if (browser != null)
+            browser.Load(url);
+        else
         {
-            if (!e.IsLoading)
-            {
-                e.Browser.MainFrame.GetSourceAsync().ContinueWith(taskHtml =>
-                {
-                    var html = taskHtml.Result;
-                    OnSourceCodeLoadedEvent?.Invoke(html);
-                });
-            }
+            browser = new ChromiumWebBrowser(url);
+            browser.LoadingStateChanged += BrowserLoadingStateChanged;
         }
-
     }
+
+    private static void BrowserLoadingStateChanged(object sender, LoadingStateChangedEventArgs e)
+    {
+        if (!e.IsLoading)
+        {
+            e.Browser.MainFrame.GetSourceAsync().ContinueWith(taskHtml =>
+            {
+                var html = taskHtml.Result;
+                OnSourceCodeLoadedEvent?.Invoke(html);
+            });
+        }
+    }
+
 }
