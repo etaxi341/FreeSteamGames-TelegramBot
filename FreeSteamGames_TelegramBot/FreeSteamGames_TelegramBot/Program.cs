@@ -11,6 +11,11 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Bot.Args;
+using Telegram.Bot.Exceptions;
+using Telegram.Bot.Extensions.Polling;
+using Telegram.Bot.Types.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace FreeSteamGames_TelegramBot
 {
@@ -18,7 +23,7 @@ namespace FreeSteamGames_TelegramBot
     {
         static TelegramBotClient bot;
         static User botUser;
-        static List<SteamDB_Crawler.Models.GameModel> games = new List<SteamDB_Crawler.Models.GameModel>();
+        static List<GameModel> games = new List<GameModel>();
 
         #region COMMANDS
         const string start = "/start";
@@ -42,10 +47,14 @@ namespace FreeSteamGames_TelegramBot
                 botToken = args[0];
             }
 
+            using CancellationTokenSource cts = new();
+            ReceiverOptions receiverOptions = new() { AllowedUpdates = { } };
+
             bot = new TelegramBotClient(botToken);
-            bot.OnMessage += Bot_OnMessage;
-            bot.OnCallbackQuery += Bot_OnCallbackQuery;
-            bot.StartReceiving();
+            bot.StartReceiving(Bot_HandleUpdateAsync,
+                               Bot_HandleErrorAsync,
+                               receiverOptions,
+                               cts.Token);
 
             botUser = await bot.GetMeAsync();
 
@@ -53,7 +62,7 @@ namespace FreeSteamGames_TelegramBot
 
             while (true)
             {
-                SteamDB.Crawl();
+                new Thread(() => SteamDB.Crawl()).Start(); //Run in thread so I don't block the message reading thread
 
                 var timeOfDay = DateTime.Now.TimeOfDay;
                 var nextFullHour = TimeSpan.FromHours(Math.Ceiling(timeOfDay.Add(TimeSpan.FromMinutes(-1)).TotalHours)).Add(TimeSpan.FromMinutes(1)); //One Minute after next full hour
@@ -63,9 +72,55 @@ namespace FreeSteamGames_TelegramBot
             }
         }
 
-        private static void Bot_OnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
+        public static Task Bot_HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
-            long chatID = e.CallbackQuery.Message.Chat.Id;
+            var ErrorMessage = exception switch
+            {
+                ApiRequestException apiRequestException => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+                _ => exception.ToString()
+            };
+
+            Console.WriteLine(ErrorMessage);
+            return Task.CompletedTask;
+        }
+
+        public static async Task Bot_HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        {
+            var handler = update.Type switch
+            {
+                // UpdateType.Unknown: 
+                // UpdateType.ChannelPost: 
+                // UpdateType.EditedChannelPost: 
+                // UpdateType.ShippingQuery: 
+                // UpdateType.PreCheckoutQuery: 
+                // UpdateType.Poll: 
+                UpdateType.Message => Bot_OnMessage(botClient, update.Message!),
+                //UpdateType.EditedMessage: 
+                UpdateType.CallbackQuery => Bot_OnCallbackQuery(botClient, update.CallbackQuery!),
+                //UpdateType.InlineQuery: 
+                //UpdateType.ChosenInlineResult: 
+                _ => UnknownUpdateHandlerAsync(botClient, update)
+            };
+
+            try
+            {
+                await handler;
+            }
+            catch (Exception exception)
+            {
+                await Bot_HandleErrorAsync(botClient, exception, cancellationToken);
+            }
+        }
+
+        private static Task UnknownUpdateHandlerAsync(ITelegramBotClient botClient, Update update)
+        {
+            Console.WriteLine($"Unknown update type: {update.Type}");
+            return Task.CompletedTask;
+        }
+
+        private static Task Bot_OnCallbackQuery(object sender, CallbackQuery callback)
+        {
+            long chatID = callback.Message.Chat.Id;
 
             DatabaseContext db = new DatabaseContext();
             Subscribers sub = db.subscribers.Where(s => s.chatID == chatID).FirstOrDefault();
@@ -78,51 +133,52 @@ namespace FreeSteamGames_TelegramBot
                 db.subscribers.Add(sub);
             }
 
-            switch (e.CallbackQuery.Data)
+            switch (callback.Data)
             {
                 case gameOnly:
                     sub.wantsDlcInfo = false;
                     sub.wantsGameInfo = true;
 
-                    bot.SendTextMessageAsync(
-                        chatId: chatID,
-                        text: "Thank you, I will let you know when I find some free games!",
-                        replyMarkup: new ReplyKeyboardRemove()
+                    bot.AnswerCallbackQueryAsync(
+                        callbackQueryId: callback.Id,
+                        text: "Thank you, I will let you know when I find some free games!"
                     );
-
-                    SendFreeGameMessage(sub);
                     break;
                 case gameanddlc:
                     sub.wantsDlcInfo = true;
                     sub.wantsGameInfo = true;
 
-                    bot.SendTextMessageAsync(
-                        chatId: chatID,
-                        text: "Thank you, I will let you know when I find some free games and dlcs!",
-                        replyMarkup: new ReplyKeyboardRemove()
+                    bot.AnswerCallbackQueryAsync(
+                        callbackQueryId: callback.Id,
+                        text: "Thank you, I will let you know when I find some free games and dlcs!"
                     );
-
-                    SendFreeGameMessage(sub);
                     break;
                 case dlcsOnly:
                     sub.wantsDlcInfo = true;
                     sub.wantsGameInfo = false;
 
-                    bot.SendTextMessageAsync(
-                        chatId: chatID,
-                        text: "Thank you, I will let you know when I find some free dlcs!",
-                        replyMarkup: new ReplyKeyboardRemove()
+                    bot.AnswerCallbackQueryAsync(
+                        callbackQueryId: callback.Id,
+                        text: "Thank you, I will let you know when I find some free dlcs!"
                     );
-
-                    SendFreeGameMessage(sub);
                     break;
             }
 
+            SendFreeGameMessage(sub);
             db.SaveChanges();
+            return Task.CompletedTask;
         }
 
         private static void OnFreeGameReturnedEvent(List<GameModel> gameModels)
         {
+            foreach (GameModel gameModel in gameModels)
+            {
+                Uri uri = new Uri(gameModel.steamLink);
+                if (!string.IsNullOrEmpty(uri.Query))
+                    gameModel.steamLink = uri.AbsoluteUri.Replace(uri.Query, "");
+                gameModel.steamLink = gameModel.steamLink.ToLower();
+            }
+
             games = gameModels;
 
             DatabaseContext db = new DatabaseContext();
@@ -133,7 +189,7 @@ namespace FreeSteamGames_TelegramBot
                 Thread messageThread = new Thread(() => SendFreeGameMessage(sub));
                 messageThread.Start();
 
-                Thread.Sleep(20);
+                Thread.Sleep(1000 / 30);
             }
         }
 
@@ -146,8 +202,8 @@ namespace FreeSteamGames_TelegramBot
                 {
                     if ((sub.wantsDlcInfo && game.gameType == "dlc") || (sub.wantsGameInfo && game.gameType == "game"))
                     {
-                        
-                        if (db.notifications.Any(n => n.steamLink.StartsWith(game.steamLink) && n.chatID == sub.chatID))
+
+                        if (db.notifications.Any(n => n.steamLink == game.steamLink && n.chatID == sub.chatID))
                             continue;
 
                         bot.SendTextMessageAsync(sub.chatID, game.name + " just went free! " + game.steamLink);
@@ -156,18 +212,31 @@ namespace FreeSteamGames_TelegramBot
                         notification.chatID = sub.chatID;
                         notification.steamLink = game.steamLink;
                         db.notifications.Add(notification);
-                        db.SaveChanges();
 
-                        Thread.Sleep(1000); //Sleep 1 second between every message so I don't hit any limits
+                        for (int i = 0; i < 5; i++) //Retry saving if fails because other thread is using it.
+                        {
+                            try
+                            {
+                                db.SaveChanges();
+                            }
+                            catch
+                            {
+                                if (i >= 5)
+                                    throw;
+                            }
+                            Thread.Sleep(50);
+                        }
                     }
+
+                    Thread.Sleep(1000); //Sleep 1 second between every message so I don't hit any limits per chat
                 }
             }
             catch { }
         }
 
-        private static void Bot_OnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
+        private static Task Bot_OnMessage(object sender, Message message)
         {
-            long chatID = e.Message.Chat.Id;
+            long chatID = message.Chat.Id;
 
             DatabaseContext db = new DatabaseContext();
             Subscribers sub = db.subscribers.Where(s => s.chatID == chatID).FirstOrDefault();
@@ -180,7 +249,7 @@ namespace FreeSteamGames_TelegramBot
                 db.subscribers.Add(sub);
             }
 
-            string command = e.Message.Text;
+            string command = message.Text;
 
             if (!string.IsNullOrEmpty(command))
                 command = command.ToLower().Replace("@" + botUser.Username.ToLower(), "");
@@ -211,6 +280,7 @@ namespace FreeSteamGames_TelegramBot
             }
 
             db.SaveChanges();
+            return Task.CompletedTask;
         }
     }
 }
