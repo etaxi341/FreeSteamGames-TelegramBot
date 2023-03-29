@@ -1,7 +1,7 @@
 using DataManager.Data;
 using DataManager.Models;
-using SteamDB_Crawler;
-using SteamDB_Crawler.Models;
+using SteamCrawler;
+using SteamCrawler.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,6 +14,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types.Enums;
+using SteamCrawler.Models.Steam;
 
 namespace FreeSteamGames_TelegramBot;
 
@@ -56,11 +57,11 @@ class Program
 
         botUser = await bot.GetMeAsync();
 
-        SteamDB.OnFreeGameReturnedEvent += OnFreeGameReturnedEvent;
+        Steam.OnFreeGameReturnedEvent += OnFreeGameReturnedEvent;
 
         while (true)
         {
-            new Thread(() => SteamDB.Crawl()).Start(); //Run in thread so I don't block the message reading thread
+            new Thread(() => Steam.Crawl()).Start(); //Run in thread so I don't block the message reading thread
 
             var timeOfDay = DateTime.Now.TimeOfDay;
             var nextFullHour = TimeSpan.FromHours(Math.Ceiling(timeOfDay.Add(TimeSpan.FromMinutes(-1)).TotalHours)).Add(TimeSpan.FromMinutes(1)); //One Minute after next full hour

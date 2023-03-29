@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FreeSteamGames_TelegramBot", "FreeSteamGames_TelegramBot\FreeSteamGames_TelegramBot.csproj", "{82B8C4E7-C176-4635-80D3-78EFCCE3BD36}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SteamDB_Crawler", "SteamDB_Crawler\SteamDB_Crawler.csproj", "{87DC0602-3F21-47E8-9E14-494EDA5787E9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SteamCrawler", "SteamCrawler\SteamCrawler.csproj", "{87DC0602-3F21-47E8-9E14-494EDA5787E9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataManager", "DataManager\DataManager.csproj", "{C7A4C5AF-58DF-4408-B4E3-7EF7B5AADA85}"
 EndProject

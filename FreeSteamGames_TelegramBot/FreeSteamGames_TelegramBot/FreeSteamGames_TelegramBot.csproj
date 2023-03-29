@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataManager\DataManager.csproj" />
-    <ProjectReference Include="..\SteamDB_Crawler\SteamDB_Crawler.csproj" />
+    <ProjectReference Include="..\SteamCrawler\SteamCrawler.csproj" />
   </ItemGroup>
 
 </Project>
