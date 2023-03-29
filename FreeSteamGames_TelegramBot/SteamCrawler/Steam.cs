@@ -69,7 +69,7 @@ public class Steam
                                     RegexOptions.None, TimeSpan.FromSeconds(5)).Groups[1].Value;
 
                 // Here fill this for now, so in case the second HttpClient will go wrong, we have at least the mandatory infos 
-                string Title = Game.Name![..300];
+                string Title = Game.Name;
                 string Link = $"https://store.steampowered.com/app/{ID}/";
                 string LinkImg = $"https://cdn.akamai.steamstatic.com/steam/apps/{ID}/header.jpg";
 
@@ -101,7 +101,7 @@ public class Steam
                         if (D is not null && D.Success && D.Data is not null)
                         {
                             // Things you need 
-                            Desc = string.IsNullOrWhiteSpace(D.Data.ShortDescription) ? "No desc" : D.Data.ShortDescription[..300];
+                            Desc = string.IsNullOrWhiteSpace(D.Data.ShortDescription) ? "No desc" : D.Data.ShortDescription;
                             LinkImg = string.IsNullOrWhiteSpace(D.Data.HeaderImage) ? LinkImg : D.Data.HeaderImage;
                             GameType = string.IsNullOrWhiteSpace(D.Data.SteamAppType) ? "game" : D.Data.SteamAppType.ToLower();
 
