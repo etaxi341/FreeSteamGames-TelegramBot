@@ -14,9 +14,15 @@ public class Steam
     public delegate void OnFreeGameReturned(List<GameModel> gameModels);
     public static OnFreeGameReturned OnFreeGameReturnedEvent;
 
+    public static bool isCrawling { get; private set; } = false;
 
     public static async void Crawl()
     {
+        if (isCrawling)
+            return;
+
+        isCrawling = true;
+
         try
         {
             // set "english" for game details in english (such as description), set Currency to "us" for price is USD or "it" to any price in EU1 (more info at my SteamGifts comment: https://www.steamgifts.com/discussion/qtfCX/what-is-mean-eu2#bDM4UkG)
@@ -116,5 +122,7 @@ public class Steam
                 OnFreeGameReturnedEvent?.Invoke(gameModels);
         }
         catch { }
+
+        isCrawling = false;
     }
 }
