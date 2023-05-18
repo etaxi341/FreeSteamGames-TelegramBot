@@ -15,7 +15,7 @@ public class Data
     public int SteamAppid { get; set; }
 
     [JsonPropertyName("required_age")]
-    public int RequiredAge { get; set; }
+    public object RequiredAge { get; set; }
 
     [JsonPropertyName("is_free")]
     public bool IsFree { get; set; }
@@ -42,13 +42,13 @@ public class Data
     public string Website { get; set; }
 
     [JsonPropertyName("pc_requirements")]
-    public object PCRequirements { get; set; } // L'ho convertito in object perché da problemi
+    public object PCRequirements { get; set; } // Converted in Object and not using it's own class (HardwareRequirements) because Steam return different DataTypes
 
     [JsonPropertyName("mac_requirements")]
-    public object MacRequirements { get; set; } // L'ho convertito in object perché da problemi
+    public object MacRequirements { get; set; } // Converted in Object and not using it's own class (HardwareRequirements) because Steam return different DataTypes
 
     [JsonPropertyName("linux_requirements")]
-    public object LinuxRequirements { get; set; } // L'ho convertito in object perché da problemi
+    public object LinuxRequirements { get; set; } // Converted in Object and not using it's own class (HardwareRequirements) because Steam return different DataTypes
 
     [JsonPropertyName("legal_notice")]
     public string LegalNotice { get; set; }
