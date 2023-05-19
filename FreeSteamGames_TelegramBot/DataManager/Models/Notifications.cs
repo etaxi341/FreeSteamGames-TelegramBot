@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataManager.Models;
 
+[Index(nameof(chatID), nameof(steamLink))]
 public class Notifications
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

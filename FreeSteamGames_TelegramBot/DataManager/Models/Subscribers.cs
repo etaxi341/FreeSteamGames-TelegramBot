@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace DataManager.Models;
 
+[Index(nameof(chatID))]
 public class Subscribers
 {
     [Key]

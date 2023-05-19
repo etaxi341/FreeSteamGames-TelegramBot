@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
+#nullable disable
+
 namespace DataManager.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
@@ -12,8 +14,7 @@ namespace DataManager.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.4");
+            modelBuilder.HasAnnotation("ProductVersion", "6.0.5");
 
             modelBuilder.Entity("DataManager.Models.Notifications", b =>
                 {
@@ -28,6 +29,8 @@ namespace DataManager.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("chatID", "steamLink");
 
                     b.ToTable("notifications");
                 });
@@ -45,6 +48,8 @@ namespace DataManager.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("chatID");
+
+                    b.HasIndex("chatID");
 
                     b.ToTable("subscribers");
                 });

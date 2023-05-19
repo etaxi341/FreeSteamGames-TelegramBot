@@ -217,6 +217,7 @@ class Program
                         try
                         {
                             db.SaveChanges();
+                            break;
                         }
                         catch
                         {
@@ -225,9 +226,9 @@ class Program
                         }
                         Thread.Sleep(50);
                     }
-                }
 
-                Thread.Sleep(1000); //Sleep 1 second between every message so I don't hit any limits per chat
+                    Thread.Sleep(1000); //Sleep 1 second between every message so I don't hit any limits per chat
+                }
             }
         }
         catch { }
