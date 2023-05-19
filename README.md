@@ -42,8 +42,6 @@ From now on the Bot will tell you when there are new free games.
 
 ## Buit With
 - [EntityFrameworkCore SQLite](https://github.com/dotnet/efcore)
-- [Newtonsoft Json](https://github.com/JamesNK/Newtonsoft.Json)
-- [CefSharp](https://github.com/cefsharp/CefSharp)
 - [Telegram.Bot](https://github.com/TelegramBots/Telegram.Bot)
 
 
